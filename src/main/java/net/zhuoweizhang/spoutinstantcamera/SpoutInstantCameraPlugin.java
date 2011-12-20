@@ -53,6 +53,9 @@ public class SpoutInstantCameraPlugin extends JavaPlugin {
 	public SpoutShapedRecipe cameraRecipe;
 
 	public void onDisable() {
+		config.set("cameraItemTextureUrl", cameraItemTextureUrl);
+		config.set("cameraShutterSoundUrl", cameraShutterSoundUrl);
+		config.set("cameraItemName", cameraItemName);
 		config.set("nextPhotoId", nextPhotoId);
 		this.saveConfig();
 		System.out.println(this + " is now disabled!");
@@ -70,7 +73,6 @@ public class SpoutInstantCameraPlugin extends JavaPlugin {
 		fileManager.addToCache(this, cameraItemTextureUrl);
 		fileManager.addToCache(this, cameraShutterSoundUrl);
 		cameraItem = new CameraItem(this);
-		MaterialData.addCustomItem(cameraItem);
 		cameraRecipe = new SpoutShapedRecipe(new SpoutItemStack(cameraItem, 1)).shape("iii", "ird", "iii").
 			setIngredient('i', MaterialData.ironIngot).setIngredient('r', MaterialData.redstone).setIngredient('d', MaterialData.diamondBlock);
 		SpoutManager.getMaterialManager().registerSpoutRecipe(cameraRecipe);
@@ -119,7 +121,7 @@ public class SpoutInstantCameraPlugin extends JavaPlugin {
 		String fileName = FileUtil.getFileName(file.getPath());
 		long crc = -1;
 		try {
-			crc = CRCStore.getCRC(fileName, FileUtils.readFileToByteArray(file));
+			crc = FileUtil.getCRC(file, FileUtils.readFileToByteArray(file));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -142,7 +144,6 @@ public class SpoutInstantCameraPlugin extends JavaPlugin {
 
 	private class SpoutInstantCameraScreenListener extends ScreenListener {
 		public void onScreenshotReceived(ScreenshotReceivedEvent event) {
-			//System.out.println("Received a screenshot.");
 			SpoutPlayer player = event.getPlayer();
 			if (!playersTakingPictures.contains(player)) {
 				return;
@@ -176,7 +177,7 @@ public class SpoutInstantCameraPlugin extends JavaPlugin {
 			if (player.isSpoutCraftEnabled()) {
 				openPictureScreen(player, stack.getDurability());
 			} else {
-				player.sendMessage("You will need Spout to see this picture.");
+				player.sendMessage("You will need Spoutcraft to see this picture.");
 			}
 		}
 	}
