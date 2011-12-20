@@ -13,6 +13,11 @@ public class PhotoDisplayPopup extends GenericPopup {
 		this.plugin = plugin;
 		this.imageId = imageId;
 		imageTexture = new GenericTexture("instantcam_" + imageId + ".png");
+		imageTexture.setWidth(320);
+		imageTexture.setHeight(180);
+		imageTexture.setX(54);
+		imageTexture.setY(30);
+		imageTexture.setAnchor(WidgetAnchor.SCALE);
 		attachWidget(plugin, imageTexture);
 	}
 

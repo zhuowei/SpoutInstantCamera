@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.*;
 import org.bukkit.configuration.file.*;
 import org.bukkit.event.*;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -37,9 +38,7 @@ public class SpoutInstantCameraPlugin extends JavaPlugin {
 
 	public CameraItem cameraItem;
 
-	public GenericCustomItem photoItem;
-
-	public String cameraItemTextureUrl, cameraShutterSoundUrl, cameraItemName, photoItemTextureUrl, photoItemName;
+	public String cameraItemTextureUrl, cameraShutterSoundUrl, cameraItemName;
 
 	private SpoutInstantCameraScreenListener screenListener = new SpoutInstantCameraScreenListener();
 	private SpoutInstantCameraPlayerListener playerListener = new SpoutInstantCameraPlayerListener();
@@ -65,27 +64,23 @@ public class SpoutInstantCameraPlugin extends JavaPlugin {
 		this.cameraItemTextureUrl = config.getString("cameraItemTextureUrl", "http://cloud.github.com/downloads/zhuowei/SpoutInstantCamera/camera.png");
 		this.cameraShutterSoundUrl = config.getString("cameraShutterSoundUrl", "http://cloud.github.com/downloads/zhuowei/SpoutInstantCamera/shutter.ogg");
 		this.cameraItemName = config.getString("cameraItemName", "Camera");
-		this.photoItemTextureUrl = config.getString("photoItemTextureUrl", "http://cloud.github.com/downloads/zhuowei/SpoutInstantCamera/photo.png");
-		this.photoItemName = config.getString("photoItemName", "Photograph");
-		this.nextPhotoId = (short) config.getInt("nextPhotoId", 0);
+		this.nextPhotoId = (short) config.getInt("nextPhotoId", 1);
 		this.saveConfig();
 		FileManager fileManager = SpoutManager.getFileManager();
-		fileManager.addToCache(this, photoItemTextureUrl);
 		fileManager.addToCache(this, cameraItemTextureUrl);
 		fileManager.addToCache(this, cameraShutterSoundUrl);
 		cameraItem = new CameraItem(this);
-		photoItem = new GenericCustomItem(this, photoItemName, photoItemTextureUrl);
 		MaterialData.addCustomItem(cameraItem);
-		MaterialData.addCustomItem(photoItem);
 		cameraRecipe = new SpoutShapedRecipe(new SpoutItemStack(cameraItem, 1)).shape("iii", "ird", "iii").
 			setIngredient('i', MaterialData.ironIngot).setIngredient('r', MaterialData.redstone).setIngredient('d', MaterialData.diamondBlock);
 		SpoutManager.getMaterialManager().registerSpoutRecipe(cameraRecipe);
 		PluginManager pm = this.getServer().getPluginManager();
 		pm.registerEvent(Event.Type.CUSTOM_EVENT, screenListener, Event.Priority.Monitor, this);
 		pm.registerEvent(Event.Type.PLAYER_ITEM_HELD, playerListener, Event.Priority.Monitor, this);
+		pm.registerEvent(Event.Type.PLAYER_INTERACT, playerListener, Event.Priority.Normal, this);
 		System.out.println(this + " is now enabled!");
 		System.out.println(this + " Item id: " + cameraItem.getCustomId());
-		System.out.println(this + " Photo id: " + photoItem.getCustomId() + " next photo damage val: " + nextPhotoId);
+		System.out.println(this + " next photo damage val: " + nextPhotoId);
 	}
 
 	public boolean onTakePicture(SpoutPlayer player) {
@@ -109,8 +104,7 @@ public class SpoutInstantCameraPlugin extends JavaPlugin {
 			ImageIO.write(image, "png", imageFile);
 			nextPhotoId++;
 			PlayerInventory inventory = player.getInventory();
-			ItemStack stack = new SpoutItemStack(photoItem, 1);
-			stack.setDurability(imageId);
+			ItemStack stack = new ItemStack(org.bukkit.Material.SIGN, 1, imageId);
 			player.getWorld().dropItemNaturally(player.getLocation(), stack);
 			player.sendMessage("The camera ejects a photograph.");
 		} catch (Exception e) {
@@ -135,10 +129,20 @@ public class SpoutInstantCameraPlugin extends JavaPlugin {
 
 	}
 
+	public boolean openPictureScreen(SpoutPlayer player, short id) {
+		if (!player.isSpoutCraftEnabled()) {
+			return false;
+		}
+		cachePictureFor(player, id);
+		PhotoDisplayPopup popup = new PhotoDisplayPopup(this, id);
+		player.getMainScreen().attachPopupScreen(popup);
+		return true;
+	}
+
 
 	private class SpoutInstantCameraScreenListener extends ScreenListener {
 		public void onScreenshotReceived(ScreenshotReceivedEvent event) {
-			System.out.println("Received a screenshot.");
+			//System.out.println("Received a screenshot.");
 			SpoutPlayer player = event.getPlayer();
 			if (!playersTakingPictures.contains(player)) {
 				return;
@@ -150,23 +154,29 @@ public class SpoutInstantCameraPlugin extends JavaPlugin {
 
 	private class SpoutInstantCameraPlayerListener extends PlayerListener {
 		public void onItemHeldChange(PlayerItemHeldEvent event) {
-			System.out.println("Out!");
 			SpoutPlayer player = (SpoutPlayer) event.getPlayer();
-			if (!player.isSpoutCraftEnabled()) {
-				return;
-			}
-			ItemStack oldStack = player.getInventory().getItem(event.getPreviousSlot());
 			ItemStack newStack = player.getInventory().getItem(event.getNewSlot());
-			System.out.println(oldStack.getTypeId() + ":" + newStack.getTypeId());
-			if (oldStack.getTypeId() == photoItem.getCustomId()) {
-				if (player.getCurrentScreen() instanceof PhotoDisplayPopup) {
-					((PhotoDisplayPopup) player.getCurrentScreen()).close();
+			if (newStack.getType().equals(org.bukkit.Material.SIGN) && newStack.getDurability() != 0) {
+				player.sendMessage("This sign has a picture painted on one side.");
+				if (player.isSpoutCraftEnabled()) {
+					player.sendMessage("Right-click to show the picture.");
+				} else {
+					player.sendMessage("You will need Spoutcraft to see the picture.");
 				}
 			}
-			if (newStack.getTypeId() == photoItem.getCustomId()) {
-				cachePictureFor(player, newStack.getDurability());
-				PhotoDisplayPopup popup = new PhotoDisplayPopup(thePlugin, newStack.getDurability());
-				player.getMainScreen().attachPopupScreen(popup);
+		}
+		public void onPlayerInteract(PlayerInteractEvent event) {
+			SpoutPlayer player = (SpoutPlayer) event.getPlayer();
+			ItemStack stack = player.getItemInHand();
+			if (event.isCancelled() || stack.getType() != org.bukkit.Material.SIGN || stack.getDurability() == 0 ||
+				!(event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK)) {
+				return;
+			}
+			event.setCancelled(true);
+			if (player.isSpoutCraftEnabled()) {
+				openPictureScreen(player, stack.getDurability());
+			} else {
+				player.sendMessage("You will need Spout to see this picture.");
 			}
 		}
 	}
