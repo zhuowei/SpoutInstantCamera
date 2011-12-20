@@ -1,0 +1,13 @@
+author: zhuowei
+database: false
+description: Take screenshots and share them ingame.
+generator: http://dinnerbone.com/minecraft/tools/pluginator/
+main: net.zhuoweizhang.spoutinstantcamera.SpoutInstantCameraPlugin
+name: SpoutInstantCamera
+startup: postworld
+version: '1.0'
+depend: [Spout]
+permissions:
+    spoutinstantcamera.use:
+        description: Allows the user to use the instant camera.
+        default: op
