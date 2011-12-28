@@ -52,11 +52,14 @@ public class SpoutInstantCameraPlugin extends JavaPlugin {
 
 	public SpoutShapedRecipe cameraRecipe;
 
+	public boolean ignoreRightClickOnContainers;
+
 	public void onDisable() {
 		config.set("cameraItemTextureUrl", cameraItemTextureUrl);
 		config.set("cameraShutterSoundUrl", cameraShutterSoundUrl);
 		config.set("cameraItemName", cameraItemName);
 		config.set("nextPhotoId", nextPhotoId);
+		config.set("ignoreRightClickOnContainers", ignoreRightClickOnContainers);
 		this.saveConfig();
 		System.out.println(this + " is now disabled!");
 	}
@@ -68,6 +71,7 @@ public class SpoutInstantCameraPlugin extends JavaPlugin {
 		this.cameraShutterSoundUrl = config.getString("cameraShutterSoundUrl", "http://cloud.github.com/downloads/zhuowei/SpoutInstantCamera/shutter.ogg");
 		this.cameraItemName = config.getString("cameraItemName", "Camera");
 		this.nextPhotoId = (short) config.getInt("nextPhotoId", 1);
+		this.ignoreRightClickOnContainers = config.getBoolean("ignoreRightClickOnContainers", true);
 		this.saveConfig();
 		FileManager fileManager = SpoutManager.getFileManager();
 		fileManager.addToCache(this, cameraItemTextureUrl);

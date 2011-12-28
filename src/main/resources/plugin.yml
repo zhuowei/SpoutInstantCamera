@@ -5,7 +5,7 @@ generator: http://dinnerbone.com/minecraft/tools/pluginator/
 main: net.zhuoweizhang.spoutinstantcamera.SpoutInstantCameraPlugin
 name: SpoutInstantCamera
 startup: postworld
-version: '1.0.1'
+version: '1.0.2'
 depend: [Spout]
 permissions:
     spoutinstantcamera.use:

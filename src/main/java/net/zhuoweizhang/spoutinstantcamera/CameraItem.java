@@ -1,6 +1,7 @@
 package net.zhuoweizhang.spoutinstantcamera;
 
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.ContainerBlock;
 
 import org.getspout.spoutapi.block.SpoutBlock;
 import org.getspout.spoutapi.player.SpoutPlayer;
@@ -17,6 +18,7 @@ public class CameraItem extends GenericCustomItem {
 
 	@Override
 	public boolean onItemInteract(SpoutPlayer player, SpoutBlock block, BlockFace face) {
+		if (plugin.ignoreRightClickOnContainers && block.getState() instanceof ContainerBlock) return false;
 		return plugin.onTakePicture(player);
 	}
 
