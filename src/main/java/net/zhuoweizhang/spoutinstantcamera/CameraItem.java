@@ -18,7 +18,7 @@ public class CameraItem extends GenericCustomItem {
 
 	@Override
 	public boolean onItemInteract(SpoutPlayer player, SpoutBlock block, BlockFace face) {
-		if (plugin.ignoreRightClickOnContainers && 
+		if (plugin.ignoreRightClickOnContainers && block != null &&
 			(block.getState() instanceof ContainerBlock || block.getState() instanceof NoteBlock || 
 				block.getState() instanceof Jukebox || block.getType() == Material.WOODEN_DOOR ||
 				block.getType() == Material.IRON_DOOR_BLOCK || block.getType() == Material.TRAP_DOOR ||
