@@ -81,9 +81,8 @@ public class SpoutInstantCameraPlugin extends JavaPlugin {
 			setIngredient('i', MaterialData.ironIngot).setIngredient('r', MaterialData.redstone).setIngredient('d', MaterialData.diamondBlock);
 		SpoutManager.getMaterialManager().registerSpoutRecipe(cameraRecipe);
 		PluginManager pm = this.getServer().getPluginManager();
-		pm.registerEvent(Event.Type.CUSTOM_EVENT, screenListener, Event.Priority.Monitor, this);
-		pm.registerEvent(Event.Type.PLAYER_ITEM_HELD, playerListener, Event.Priority.Monitor, this);
-		pm.registerEvent(Event.Type.PLAYER_INTERACT, playerListener, Event.Priority.Normal, this);
+		pm.registerEvents(screenListener, this);
+		pm.registerEvents(playerListener, this);
 		System.out.println(this + " is now enabled!");
 		System.out.println(this + " Item id: " + cameraItem.getCustomId());
 		System.out.println(this + " next photo damage val: " + nextPhotoId);
@@ -146,7 +145,8 @@ public class SpoutInstantCameraPlugin extends JavaPlugin {
 	}
 
 
-	private class SpoutInstantCameraScreenListener extends ScreenListener {
+	private class SpoutInstantCameraScreenListener implements Listener {
+		@EventHandler
 		public void onScreenshotReceived(ScreenshotReceivedEvent event) {
 			SpoutPlayer player = event.getPlayer();
 			if (!playersTakingPictures.contains(player)) {
@@ -157,7 +157,8 @@ public class SpoutInstantCameraPlugin extends JavaPlugin {
 		}
 	}
 
-	private class SpoutInstantCameraPlayerListener extends PlayerListener {
+	private class SpoutInstantCameraPlayerListener implements Listener {
+		@EventHandler(priority=EventPriority.MONITOR)
 		public void onItemHeldChange(PlayerItemHeldEvent event) {
 			SpoutPlayer player = (SpoutPlayer) event.getPlayer();
 			ItemStack newStack = player.getInventory().getItem(event.getNewSlot());
@@ -170,6 +171,7 @@ public class SpoutInstantCameraPlugin extends JavaPlugin {
 				}
 			}
 		}
+		@EventHandler
 		public void onPlayerInteract(PlayerInteractEvent event) {
 			SpoutPlayer player = (SpoutPlayer) event.getPlayer();
 			ItemStack stack = player.getItemInHand();
