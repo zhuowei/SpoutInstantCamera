@@ -162,7 +162,7 @@ public class SpoutInstantCameraPlugin extends JavaPlugin {
 		public void onItemHeldChange(PlayerItemHeldEvent event) {
 			SpoutPlayer player = (SpoutPlayer) event.getPlayer();
 			ItemStack newStack = player.getInventory().getItem(event.getNewSlot());
-			if (newStack.getType().equals(org.bukkit.Material.SIGN) && newStack.getDurability() != 0) {
+			if (newStack != null && newStack.getType().equals(org.bukkit.Material.SIGN) && newStack.getDurability() != 0) {
 				player.sendMessage("This sign has a picture painted on one side.");
 				if (player.isSpoutCraftEnabled()) {
 					player.sendMessage("Right-click to show the picture.");
@@ -176,7 +176,7 @@ public class SpoutInstantCameraPlugin extends JavaPlugin {
 			SpoutPlayer player = (SpoutPlayer) event.getPlayer();
 			ItemStack stack = player.getItemInHand();
 			if ((event.isCancelled() && event.getAction() != Action.RIGHT_CLICK_AIR) 
-				|| stack.getType() != org.bukkit.Material.SIGN || stack.getDurability() == 0 ||
+				|| stack == null || stack.getType() != org.bukkit.Material.SIGN || stack.getDurability() == 0 ||
 				!(event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK)) {
 				return;
 			}
