@@ -19,8 +19,8 @@ import org.getspout.spoutapi.player.*;
 import org.getspout.spoutapi.event.screen.*;
 import org.getspout.spoutapi.sound.*;
 
-import org.getspout.commons.io.CRCStore;
-import org.getspout.commons.io.FileUtil;
+import org.getspout.spoutapi.io.CRCStore;
+import org.getspout.spoutapi.io.FileUtil;
 import org.apache.commons.io.FileUtils;
 import org.getspout.spoutapi.packet.PacketPreCacheFile;
 
